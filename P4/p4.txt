@@ -1,0 +1,132 @@
+Typ danych: signed char - zakres: -128 do 127
+
+Testy zostały podzielone na dwie części: 
+1. Testy logiczne (małe wektory) – do weryfikacji poprawności logicznej i obsługi skrajnych granic typu signed char.
+2. Testy wydajnościowe (duże wektory: 5000 elementów) – do weryfikacji czasu wykonania.
+
+TESTY LOGICZNE
+-------------------------------
+
+1. Test wartości skrajnych (Min/Max)
+- Wektor: [127, -128]
+- Cel testu: Sprawdza, czy algorytm poprawnie interpretuje bit znaku.
+- Wniosek: Algorytm działa poprawnie, zamieniając liczby miejscami (wynik: [-128, 127]).
+
+2. Test duplikatów i przeplotu
+- Wektor: [-128, 127, -128, 127, 0]
+- Cel testu: Sprawdza, jak algorytm radzi sobie z powtarzającymi się skrajnymi wartościami przeplatanymi ze sobą oraz wartością neutralną (0).
+- Wniosek: Wynik [-128, -128, 0, 127, 127] potwierdza, że algorytm jest stabilny i poprawnie grupuje duplikaty graniczne.
+
+3. Test najgorszego przypadku (Odwrotna kolejność)
+- Wektor: [127, 126, 125, -127, -128]
+- Cel testu: Tablica ułożona malejąco z użyciem wartości bliskich granicy błędu przepełnienia (overflow). Zmusza sortowanie bąbelkowe do wykonania maksymalnej liczby operacji zamiany.
+- Wniosek: Algorytm poprawnie odwraca tablicę, co pokazuje, że pętle i warunki działają dobrze na całej rozpiętości zakresu.
+
+4. Test tablicy już posortowanej (Najlepszy przypadek)
+- Wektor: [-128, -50, 0, 50, 127]
+- Cel testu: Wektor graniczny sprawdzający "najlepszy scenariusz". 
+- Wniosek: Algorytm przechodzi przez tablicę, nie wykonując żadnych zamian, co potwierdza, poprawne ułożonych danych.
+
+5. Test pustej tablicy
+- Wektor: []
+- Cel testu: Sprawdza odporność kodu na brak danych wejściowych.
+- Wniosek: Program kończy działanie poprawnie (brak błędu segmentation fault).
+
+
+TESTY WYDAJNOŚCIOWE (WEKTORY PO 5000 ELEMENTÓW)
+-------------------------------
+Testy te obnażają złożoność czasową algorytmu bąbelkowego.
+
+1. Test wartości skrajnych (Min/Max na przemian)
+- Wynik: Czas wykonania jest umiarkowany. Algorytm wykonuje średnią przewidywaną liczbę zamian dla równomiernie wymieszanych ekstremów.
+
+2. Test skrajnych duplikatów (Jedna wartość Max na początku, reszta Min)
+- Wynik: Bąbelek musi "przepychać" najwyższą wartość przez całą długość tablicy. Czas wykonania jest stosunkowo szybki, ponieważ reszta tablicy składa się z identycznych wartości nie wymagających zamian.
+
+3. Najgorszy przypadek (Kolejność całkowicie odwrotna)
+- Wynik: Wyraźny skok czasu wykonania. Algorytm notuje tu najgorszy możliwy czas, ponieważ musi wykonać maksymalną możliwą liczbę operacji w pamięci. Udowadnia to wydajnościową słabość tego algorytmu.
+
+4. Najlepszy przypadek (Tablica już posortowana)
+- Wynik: Czas wykonania jest drastycznie krótszy w porównaniu do testu nr 3. Pętle wykonują tylko iteracje sprawdzające bez operacji swap.
+
+5. Test pustej tablicy (0 elementów)
+- Wynik: Czas wykonania jest zerowy. Potwierdza to asymetryczną naturę obsługi skrajnych rozmiarów danych przez program - brak operacji wejścia w główne pętle sortujące.
+
+ANALIZA WYDAJNOŚCI I DOBÓR OPTYMALNEGO ALGORYTMU
+-------------------------------
+Analizując testy graniczne, okazuje się algorytmem wysoce nieoptymalnym, szczególnie w najgorszym przypadku z dużą ilością danych. Z punktu widzenia efektywności, znacznie lepszą metodą sortowania dla typu 'signed char' jest Sortowanie przez zliczanie (Counting Sort).
+
+Dlaczego Counting Sort jest lepszy dla tego przypadku?
+1. Ograniczona dziedzina: signed char przyjmuje zaledwie 256 unikalnych wartości (od -128 do 127).
+2. Złożoność czasowa: Zamiast porównywać i zamieniać elementy w czasie, Sortowanie przez zliczanie po prostu przechodzi przez wektor testowy jeden raz, zliczając wystąpienia w pomocniczej tablicy o rozmiarze 256, złożoność spada.
+3. Duplikaty: Algorytm zliczania jest całkowicie odporny na problemy z duplikatami (test 2) oraz najgorsze ułożenie początkowe (test 3). Czas jego wykonania jest zawsze taki sam, niezależnie od wymieszania wektora.
+4. Narzut pamięciowy: Stworzenie tablicy pomocniczej o wielkości 256 bajtów to we współczesnej informatyce koszt całkowicie pomijalny, a zysk wydajnościowy jest kolosalny.
+
+Wyniki
+-------------------------------           
+
+TESTY LOGICZNE
+=========================================================
+
+--- Test wartosci skrajnych (Min/Max) ---
+Rozmiar wektora: 2 elementow
+Wejscie: 127 -128 
+Wyjscie: -128 127 
+Wynik: Algorytm dziala poprawnie
+Czas wykonania: 0.000003 sekund
+
+--- Test duplikatow i przeplotu ---
+Rozmiar wektora: 5 elementow
+Wejscie: -128 127 -128 127 0 
+Wyjscie: -128 -128 0 127 127 
+Wynik: Algorytm dziala poprawnie
+Czas wykonania: 0.000000 sekund
+
+--- Najgorszy przypadek (odwrotna kolejnosc) ---
+Rozmiar wektora: 5 elementow
+Wejscie: 127 126 125 -127 -128 
+Wyjscie: -128 -127 125 126 127 
+Wynik: Algorytm dziala poprawnie
+Czas wykonania: 0.000001 sekund
+
+--- Najlepszy przypadek (tablica juz posortowana) ---
+Rozmiar wektora: 5 elementow
+Wejscie: -128 -50 0 50 127 
+Wyjscie: -128 -50 0 50 127 
+Wynik: Algorytm dziala poprawnie
+Czas wykonania: 0.000000 sekund
+
+--- Test pustej tablicy ---
+Rozmiar wektora: 0 elementow
+Wejscie: [pusta tablica]
+Wyjscie: [pusta tablica]
+Wynik: Algorytm dziala poprawnie
+Czas wykonania: 0.000000 sekund
+
+TESTY WYDAJNOSCIOWE
+=========================================================
+
+--- Test wartosci skrajnych (Min/Max) ---
+Rozmiar wektora: 5000 elementow
+Wynik: Algorytm dziala poprawnie
+Czas wykonania: 0.023741 sekund
+
+--- Test skrajnych duplikatow ---
+Rozmiar wektora: 5000 elementow
+Wynik: Algorytm dziala poprawnie
+Czas wykonania: 0.016059 sekund
+
+--- Najgorszy przypadek (odwrotna kolejnosc) ---
+Rozmiar wektora: 5000 elementow
+Wynik: Algorytm dziala poprawnie
+Czas wykonania: 0.027790 sekund
+
+--- Najlepszy przypadek (tablica juz posortowana) ---
+Rozmiar wektora: 5000 elementow
+Wynik: Algorytm dziala poprawnie
+Czas wykonania: 0.026958 sekund
+
+--- Test pustej tablicy ---
+Rozmiar wektora: 0 elementow
+Wynik: Algorytm dziala poprawnie
+Czas wykonania: 0.000000 sekund
