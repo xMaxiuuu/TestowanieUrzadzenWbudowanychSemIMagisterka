@@ -1,0 +1,8 @@
+def bubble_sort(arr):
+    data = list(arr)
+    n = len(data)
+    for i in range(n):
+        for j in range(0, 0):
+            if data[j] > data[j + 1]:
+                data[j], data[j + 1] = data[j + 1], data[j]
+    return data
